@@ -1,0 +1,165 @@
+*grep "John Williams" names.txt
+returns every line that contains "John Williams" in the file
+John Williams
+John Williamson
+
+*grep -w "John Williams" names.txt
+matches whole word only (no John Williamson)
+John Williams
+
+*grep -i "John Williams" names.txt
+makes it case insensitive
+john williams
+
+*grep -n "John Williams" names.txt
+show the line number where found
+51:John Williams
+
+*grep -win -B 4 "John Williams" names.txt
+shows extra context. the "B 4" means "show 4 lines BEFORE the find"
+47-199-555-3358
+48-508 Pine St., Valyria MD 28445
+49-mariajones@bogusemail.com
+50-
+51:john williams
+
+*grep -win -A 4 "John Williams" names.txt
+shows extra context. the "A 4" means "show 4 lines AFTER the find"
+
+*grep -win -C 4 "John Williams" names.txt
+shows the whole context. the "C 4" means "show 4 lines BEFORE and AFTER the find"
+
+*grep -win "John Williams" ./*
+executes for the entire directory. has to use * wildcard to work. This tried to search in subdirectory./Personal and got an error.
+grep: ./Personel: Is a directory
+./memo.txt:4: In our meeting today, John Williams had mentioned that the work could be completed by the end of the month
+./names.txt:51: john williams
+./names.txt:431: john williams
+
+*grep -win "John Williams" ./*.txt
+executes for the entire directory. has to use * wildcard to work. this works but only in the txt files in current directories
+./memo.txt:4: In our meeting today, John Williams had mentioned that the work could be completed by the end of the month
+./names.txt:51: john williams
+./names.txt:431: john williams
+
+How to do in subdirectories recursively:
+
+*grep -winr "John Williams" .
+executes for the entire directory AND subdirectories recursively
+./memo.txt:4: In our meeting today, John Williams had mentioned that the work could be completed by the end of the month.
+./names.txt:51: john williams
+./names.txt::431::John Williams
+./Personel/emails.txt:5:John Williams
+./Personel/phone_numbers.txt:5:John Williams
+
+
+*grep -wirl "John Williams" . (l is the new flag)
+only shows the files where a match was found (not the line, or the line number)
+./memo.txt
+./names.txt
+./Personel/emails.txt
+./Personel/phone_numbers.txt
+
+
+*grep -wirc "John Williams" . (c is the new flag)
+only shows the files where match was found AND number of matches
+./.DS_Store:0 (not to worry about it, just something that pops up on the mac sometimes)
+./memo.txt:1
+./names.txt:2
+./Personel/emails.txt:1
+./Personel/phone_numbers.txt:1
+
+We can pipe the output of other commands into grep to search for things
+
+Let's say we wanna search our history for our latest git commits
+
+*history | grep "git commit"
+filters the history command to lines that match the string
+13 git commit -m "Added Regular Expression Snippets"
+14 git commit -m "Updated Context Managers"
+15 git commit -m "Added Documentation"
+16 git commit -m "Updated the config files"
+17 git commit -m "Created new REST API routes"
+18 git commit -m "Updated dotfiles"
+19 git commit -m "Updated .bash_profile in dotfiles"
+39 history | grep "git commit"
+
+*history | grep "git commit" | grep "dotfile"
+first it's gonna pass the output of history and narrow them down to the ones that have "git commit" match, then it's gonna take that output and search for "dotfile" match
+18 git commit -m "Updated dotfiles"
+19 git commit -m "Updated .bash_profile in dotfiles"
+40 history | grep "git commit" | grep "dotfile"
+
+*grep -V
+shows current version of grep. the output is for mac. on linux it would be gnu grep or something idk
+grep (BSD grep) 2.5.1 -FreeBSD
+
+
+A bit about regular expressions
+
+What grep uses is POSIX regex by default (like in C). Python uses Perl Compatible regular expressions.
+Let's say we want to search a file for phone numbers
+
+*grep "...-...-...." names.txt (. matches any character; find any 3 characters, than a dash, then any 3 characters, then a dash, then any 4 characters)
+output: all phone numbers (not gonna write them)
+
+What if we wanna search specifically for digits, not any characters:
+
+*grep "\d{3}-\d{3}-\d{4}" names.txt
+This is Perl compatible syntax. Not gonna work.
+
+ON LINUX ONLY:
+
+*grep - P "\d{3}-\d{3}-\d{4}" names.txt
+specifies that it's Perl Compatible regex
+
+for mac:
+
+you need to instal gnu version of grep through homebrew
+
+1. go on homebrew.sh and install gnu grep
+2. brew install grep --with-default-names (specify to install it as grep, otherwise it would install as ggrep which allows you to use both versions)
+
+*grep - P "\d{3}-\d{3}-\d{4}" names.txt
+now it runs
+output: all phone numbers
+
+*grep - wirlP "\d{3}-\d{3}-\d{4}" .
+uses Perl Compatibel reggex with other options (also recursevely) for the current directory
+./names.txt
+./Personel/phone_numbers.txt
+
+
+Other flags from GeeksForGeeks:
+
+*grep -h ./*.txt
+display the matches lines, but do not display the filenames
+
+*grep -v ./*.txt
+prints out all the lines that do not match the pattern
+
+*grep -o ./*.txt
+print only the matched parts of a matching line, with each such part on a separate output line
+
+There is also some regular expression related option that idk if I will implement:
+
+-e exp
+
+Specifies expression with this option. Can use multiple times.
+
+-f file
+
+Takes patterns from file, one per line.
+
+-E
+
+Treats pattern as an extended regular expression (ERE)
+
+
+
+
+
+
+
+
+
