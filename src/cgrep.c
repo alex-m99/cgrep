@@ -3,7 +3,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-bool ListDirectoryContents(const char *sDir)
+
+#define W 0x01
+#define I 0x02
+#define N 0x04
+
+bool searchFiles(const char *sDir, int flags)
 {
     WIN32_FIND_DATA fdFile;
     HANDLE hFind = NULL;
@@ -54,7 +59,25 @@ bool ListDirectoryContents(const char *sDir)
 
 int main(int argc, char *argv[]) {
 
-ListDirectoryContents("D:\\C Projects\\CGrep");
+    int flags = 0;
 
-return 0;
+    while (-- argc > 0 && (*++argv)[0] == '-') {
+        for (char *s = argv[0] + 1; *s != '\0'; ++s) 
+            switch (*s) {
+                case 'w':
+                    flags |= W;
+                    break;
+                case 'i':
+                    flags |= I;
+                    break;
+                case 'n':
+                    flags |= N;
+            }
+    }
+
+    printf("Bitmask: %x\n", flags);
+
+    searchFiles("D:\\C Projects\\CGrep", flags);
+
+    return 0;
 }
