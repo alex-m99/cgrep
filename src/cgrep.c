@@ -15,43 +15,58 @@
     - modify searchFiles to call readFile when file is found (think whether you wanna open any file or just text files)
     - search the files for pattern and output accordingly  */ 
 
-bool searchFiles(const char *sDir, int flags)
-{
+bool isDirectory(const char *path) {
+    DWORD attributes = GetFileAttributes(path);
+    
+    if (attributes == INVALID_FILE_ATTRIBUTES) {
+        // Error handling if the path is invalid
+        printf("Invalid path: [%s]\n", path);
+        return false;
+    }
+    
+    // Check if it's a directory
+    return (attributes & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+
+bool searchFiles(const char *sDir, int flags) {
     WIN32_FIND_DATA fdFile;
     HANDLE hFind = NULL;
 
     char sPath[2048];
+    
+    // check if the passed path is already a file
+    if(!isDirectory(sDir)) {
+        printf("File: %s\n", sDir);
+        return true;
+    }
 
     // string buffer for hFind. search for all files and directories
     sprintf(sPath, "%s\\*.*", sDir);
     printf("sPath outside: %s\n", sPath);
 
-    if((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE)
-    {
+    if((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE) {
         printf("Path not found: [%s]\n", sDir);
         return false;
     }
 
-    do
-    {
+    do {
         // first two directories will be . and ..
         if(strcmp(fdFile.cFileName, ".") != 0
-                && strcmp(fdFile.cFileName, "..") != 0)
-        {
+                && strcmp(fdFile.cFileName, "..") != 0) {
             // build filepath with parameter path and found filename
             sprintf(sPath, "%s\\%s", sDir, fdFile.cFileName);
             printf("sPath inside: %s\n", sPath);
 
 
             // if directory
-            if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY)
-            {
+            if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY) {
                // printf("Directory: %s\n", sPath);
                 // recursively search for the next files in the directory
                 searchFiles(sPath, flags); 
             }
             //if file
-            else{
+            else {
                // printf("File: %s\n", sPath);
             }
         }
