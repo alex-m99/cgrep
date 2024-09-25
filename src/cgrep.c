@@ -13,7 +13,28 @@
     - add option to use multiple files as arguments (maybe with linked list)
     - add option for uppecrase cmd flags as well
     - modify searchFiles to call readFile when file is found (think whether you wanna open any file or just text files)
-    - search the files for pattern and output accordingly  */ 
+    - search the files for pattern and output accordingly  
+    - make sure the struct members are sufficient to output the lines for -B, -A and -C options*/ 
+
+
+struct path {
+    char *name;
+    struct path *next;
+};
+
+struct file {
+	char *name;
+	struct line *curLine;
+	int lineCount;
+	struct file *next;
+};
+
+struct line {
+	int lineNr;
+	char *lineText;
+	struct line *next;
+};
+
 
 bool isDirectory(const char *path) {
     DWORD attributes = GetFileAttributes(path);
@@ -79,13 +100,28 @@ bool searchFiles(const char *sDir, int flags) {
     return true;
 }
 
+void  freePathList(struct path **headPath) {
+    struct path *curPath = *headPath;
+    while (curPath != NULL) {
+        struct path *nextPath = curPath->next;
+        free(curPath->name);
+        free(curPath);
+        curPath = nextPath;
+    }
+    *headPath = NULL;
+}
+
 int main(int argc, char *argv[]) {
 
     int flags = 0;
     char *search;
+    char *name;
+    struct path *curPath = NULL;
+    struct path *headPath = NULL;
+    struct path *tailPath = NULL;
 
     // get options
-    while (-- argc > 0 && (*++argv)[0] == '-') {
+    while (--argc > 0 && (*++argv)[0] == '-') {
         for (char *s = argv[0] + 1; *s != '\0'; ++s) 
             switch (*s) {
                 case 'w':
@@ -110,20 +146,56 @@ int main(int argc, char *argv[]) {
     }
     
 
-    // get files to apply to
+    // get paths/files to apply to
+
 
 
     printf("Bitmask: %x\n", flags);
     printf("Search: %s\n", search);
-    printf("Argv: %s\n", *argv);
+   // printf("Argv: %s\n", *argv);
 
     if (argc > 0) {
-        searchFiles(*argv, flags);
+        while (argc-- > 0) {
+            struct path *new = (struct path *) malloc(sizeof(struct path));
+            if (new == NULL) {
+                printf("Failed to allocate memory for new path");
+                return 1;
+            }
+
+            new->name = (char *) malloc(strlen(*argv)+1);
+            if (new->name == NULL) {
+                printf("Failed to allocate memory for name");
+                free(new);
+                return 1;
+            }
+
+            if (tailPath != NULL)
+                tailPath->next = new;
+
+            strcpy(new->name, *argv);
+            new->next = NULL;
+            tailPath = new;
+
+            if (headPath == NULL)
+                headPath = new;   
+            ++argv;
+        }
+        
+        //searchFiles(*argv, flags);
     }
     else {
-        printf("Error: No files or path provided to search\n");
+        printf("Error: No files or paths provided to search\n");
         return 1;
     }
+
+    curPath = headPath;
+    while (curPath != NULL) {
+        printf("Name: %s\n", curPath->name);
+        curPath = curPath->next;
+    }
+
+    // free the linked list
+    freePathList(&headPath);
 
     // "D:\\C Projects\\CGrep"
     return 0;
