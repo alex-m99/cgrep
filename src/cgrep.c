@@ -8,6 +8,13 @@
 #define I 0x02
 #define N 0x04
 
+/*TO DO:
+    - add relative path option to cmd input
+    - add option to use multiple files as arguments (maybe with linked list)
+    - add option for uppecrase cmd flags as well
+    - modify searchFiles to call readFile when file is found (think whether you wanna open any file or just text files)
+    - search the files for pattern and output accordingly  */ 
+
 bool searchFiles(const char *sDir, int flags)
 {
     WIN32_FIND_DATA fdFile;
@@ -41,7 +48,7 @@ bool searchFiles(const char *sDir, int flags)
             {
                // printf("Directory: %s\n", sPath);
                 // recursively search for the next files in the directory
-                ListDirectoryContents(sPath); 
+                searchFiles(sPath, flags); 
             }
             //if file
             else{
@@ -51,7 +58,7 @@ bool searchFiles(const char *sDir, int flags)
     }
     while(FindNextFile(hFind, &fdFile)); 
 
-    // closesearch handle
+    // close search handle
     FindClose(hFind); 
 
     return true;
@@ -60,7 +67,9 @@ bool searchFiles(const char *sDir, int flags)
 int main(int argc, char *argv[]) {
 
     int flags = 0;
+    char *search;
 
+    // get options
     while (-- argc > 0 && (*++argv)[0] == '-') {
         for (char *s = argv[0] + 1; *s != '\0'; ++s) 
             switch (*s) {
@@ -75,9 +84,32 @@ int main(int argc, char *argv[]) {
             }
     }
 
+    // get search pattern
+    if(argc > 0) {
+        search = *argv++; 
+        --argc;
+    }
+    else {
+        printf("Error: No search pattern provided\n");
+        return 1;
+    }
+    
+
+    // get files to apply to
+
+
     printf("Bitmask: %x\n", flags);
+    printf("Search: %s\n", search);
+    printf("Argv: %s\n", *argv);
 
-    searchFiles("D:\\C Projects\\CGrep", flags);
+    if (argc > 0) {
+        searchFiles(*argv, flags);
+    }
+    else {
+        printf("Error: No files or path provided to search\n");
+        return 1;
+    }
 
+    // "D:\\C Projects\\CGrep"
     return 0;
 }
