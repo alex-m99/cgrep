@@ -2,6 +2,8 @@
     "files.associations": {
         "*.py": "python",
         "aaa": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "system_error": "c",
+        "xlocale": "c"
     }
 }
