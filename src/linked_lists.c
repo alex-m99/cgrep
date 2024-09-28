@@ -1,6 +1,6 @@
 #include "../include/search.h"
 
-void addPathNode(char *pathName, struct path **headPath, struct path **tailPath) {
+void addPathNode(const char *pathName, struct path **headPath, struct path **tailPath) {
     struct path *newPath = (struct path *) malloc(sizeof(struct path));
         if (newPath == NULL) {
             printf("Failed to allocate memory");
@@ -25,11 +25,32 @@ void addPathNode(char *pathName, struct path **headPath, struct path **tailPath)
             *headPath = newPath;   
 }
 
-// TO DO: addLineNode
+void addLineNode(const char *lineText, struct line **headLine, struct line **tailLine) {
+    struct line *newLine = (struct line *) malloc(sizeof(struct line));
+        if (newLine == NULL) {
+            printf("Failed to allocate memory");
+            exit(1);
+        }
 
-void addFileNode(char *fileName, struct file **headFile, struct file **tailFile) {
+        newLine->lineText = (char *) malloc(strlen(lineText)+1);
+        if (newLine->lineText == NULL) {
+            printf("Failed to allocate memory");
+            free(newLine);
+            return exit(1);
+        }
 
-    printf("Hello from addFileNode\n");
+        if (*tailLine != NULL)
+            (*tailLine)->next = newLine;
+
+        strcpy(newLine->lineText, lineText);
+        newLine->next = NULL;
+        *tailLine = newLine;
+
+        if (*headLine == NULL)
+            *headLine = newLine;  
+}
+
+void addFileNode(const char *fileName, struct file **headFile, struct file **tailFile) {
     struct file *newFile = (struct file *) malloc(sizeof(struct file));
         if (newFile == NULL) {
             printf("Failed to allocate memory");

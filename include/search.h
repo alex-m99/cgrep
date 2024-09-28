@@ -22,28 +22,30 @@ struct path {
 struct file {
     char *name;
     struct line *headLine;
-    int lineCount;
+    int linePatternCount;
     struct file *next;
 };
 
 struct line {
-    int lineNr;
     char *lineText;
+    int lineNumber;
     struct line *next;
 };
 
 // Function declarations
-void addPathNode(char *pathName, struct path **headPath, struct path **tailPath);
-void addFileNode(char *fileName, struct file **headFile, struct file **tailFile);
+void addPathNode(const char *pathName, struct path **headPath, struct path **tailPath);
+void addLineNode(const char *lineText, struct line **headLine, struct line **tailLine);
+void addFileNode(const char *fileName, struct file **headFile, struct file **tailFile);
 void freePathsList(struct path **headPath);
 void freeLinesList(struct line **headLine);
 void freeFilesList(struct file **headFile);
 
 bool isDirectory(const char *path);
 bool searchDirectory(const char *sPattern, const int flags, const char *sDir, struct file **headFile, struct file **tailFile);
+void searchFile(const char *sPattern, const char *sPath, struct file **headFile, struct file **tailFile);
 char *readLine(FILE *file);
-// replace with struct line *searchPatternInFile
-void searchPatternInFile(const char *sPattern, const char *filePath);
+struct line *searchPatternInFile(const char *sPattern, const char *filePath, int *linePatternCount);
+void printResult(struct file *headFile, const int flags);
 void beginSearch(const char *searchPattern, const int flags, struct path *headPath);
 
 #endif
