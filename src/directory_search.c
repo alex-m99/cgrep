@@ -13,7 +13,7 @@ bool isDirectory(const char *path) {
     return (attributes & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-bool searchDirectory(const char *sDir, int flags, struct file *headFile, struct file *tailFile) {
+bool searchDirectory(const char *sPattern, const int flags, const char *sDir, struct file **headFile, struct file **tailFile) {
     WIN32_FIND_DATA fdFile;
     HANDLE hFind = NULL;
 
@@ -21,7 +21,7 @@ bool searchDirectory(const char *sDir, int flags, struct file *headFile, struct 
     
     // string buffer for hFind. search for all files and directories
     sprintf(sPath, "%s\\*.*", sDir);
-    printf("sPath outside: %s\n", sPath);
+    //printf("sPath outside: %s\n", sPath);
 
     if((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE) {
         printf("Path not found: [%s]\n", sDir);
@@ -34,23 +34,24 @@ bool searchDirectory(const char *sDir, int flags, struct file *headFile, struct 
                 && strcmp(fdFile.cFileName, "..") != 0) {
             // build filepath with parameter path and found filename
             sprintf(sPath, "%s\\%s", sDir, fdFile.cFileName);
-            printf("sPath inside: %s\n", sPath);
+           // printf("sPath inside: %s\n", sPath);
 
 
             // if found directory, recursively call function to search for files in it
             if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY) {
-               // printf("Directory: %s\n", sPath);
+               //printf("Directory: %s\n", sPath);
                 // recursively search for the next files in the directory
-                searchDirectory(sPath, flags, headFile, tailFile); 
+                searchDirectory(sPattern, flags, sDir, headFile, tailFile); 
             }
             //if found file, search for pattern, add the file to linked list if pattern found and link
             // the file to the line list
             else {
-                struct line *headLine = searchPatternInFile(sPath);
-                if (headLine != NULL){
-                    addFileNode(sPath, headFile, tailFile);
-                    tailFile->headLine = headLine; 
-                }
+                searchPatternInFile(sPattern, sPath);
+               // struct line *headLine = searchPatternInFile(sPattern, sPath);
+              //  if (headLine != NULL){
+                    //addFileNode(sPath, headFile, tailFile);
+               //     (*tailFile)->headLine = headLine; 
+             //   }
                 
             }
         }
@@ -63,14 +64,76 @@ bool searchDirectory(const char *sDir, int flags, struct file *headFile, struct 
     return true;
 }
 
-struct line *searchPatternInFile(char *file) {
-   // struct line *headLine = NULL;
-   // struct line *tailLine = NULL;
+char *readLine(FILE *file) {
+    size_t buffer_size = 128;
+    char *buffer = (char *) malloc(buffer_size);
+    if (buffer == NULL) {
+        printf("Failed to allocate memory for line reading");
+        return NULL;
+    }
+    size_t pos = 0;
+    int c;
 
-    return NULL;
+    while ((c = fgetc(file)) != EOF) {
+        // Ensure space for the null terminator
+        if (pos + 1 >= buffer_size) {
+            buffer_size *= 2;
+            char *new_buffer = realloc(buffer, buffer_size);
+            if (!new_buffer) {
+                printf("Failed to allocate memory for line reading");
+                free(buffer);
+                return NULL;
+            }
+            buffer = new_buffer;
+        }
+
+        buffer[pos++] = c;
+
+        // Stop at newline
+        if (c == '\n') {
+            break;
+        }
+    }
+
+    // Null-terminate
+    buffer[pos] = '\0';
+
+    if (pos == 0 && c == EOF) {
+        free(buffer);
+        return NULL;
+    }
+
+    return buffer;
 }
 
-void beginSearch(struct path *headPath, int flags) {
+// replace with struct line *searchPatternInFile
+void searchPatternInFile(const char *sPattern, const char *filePath) {
+   // struct line *headLine = NULL;
+  // struct line *tailLine = NULL;
+    FILE *file = fopen(filePath, "r");
+    char *line;
+    int lineNumber = 0;
+
+    if (file == NULL) {
+        printf("Error opening file %s\n", filePath);
+        exit(1);
+    }
+
+    while((line = readLine(file)) != NULL) {
+        ++lineNumber;
+
+        if(strstr(line, sPattern) != NULL) {
+            printf("Pattern found in file %s at line %d: %s", filePath, lineNumber, line);
+        }
+
+        free(line);
+    }
+
+    fclose(file);
+  //  return NULL;
+}
+
+void beginSearch(const char *searchPattern, const int flags, struct path *headPath) {
     // traverse the path linked list and do searchDirectory routine for each path. 
     // if the provided path is directory, begin searchDirectory routine
     // if the provided path is file, begin searchPatternInFile routine
@@ -80,13 +143,19 @@ void beginSearch(struct path *headPath, int flags) {
     struct path *curPath = headPath;
     while (curPath != NULL) {
         if(isDirectory(curPath->name)) 
-            searchDirectory(curPath->name, flags, headFile, tailFile);
+            searchDirectory(searchPattern, flags, curPath->name, &headFile, &tailFile);
         else {
-            searchPatternInFile(curPath->name);
+            searchPatternInFile(searchPattern, curPath->name);
         }
         curPath = curPath->next;
     }
 
+    struct file *curFile = headFile;
+    while (curFile != NULL) {
+        printf("File name: %s\n", curFile->name);
+        curFile = curFile->next;
+    }
+    
     // free the files linked list
     freeFilesList(&headFile);
 }

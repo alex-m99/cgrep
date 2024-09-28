@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+
 
 // Macros for flags
 #define W 0x01
@@ -31,14 +33,17 @@ struct line {
 };
 
 // Function declarations
-bool isDirectory(const char *path);
-struct line *searchPatternInFile(char *file);
-void addFileNode(char *fileName, struct file *headFile, struct file *tailFile);
-void addPathNode(char *pathName, struct path *headPath, struct path *tailPath);
-bool searchDirectory(const char *sDir, int flags, struct file *headFile, struct file *tailFile);
+void addPathNode(char *pathName, struct path **headPath, struct path **tailPath);
+void addFileNode(char *fileName, struct file **headFile, struct file **tailFile);
+void freePathsList(struct path **headPath);
 void freeLinesList(struct line **headLine);
 void freeFilesList(struct file **headFile);
-void freePathsList(struct path **headPath);
-void beginSearch(struct path *headPath, int flags);
+
+bool isDirectory(const char *path);
+bool searchDirectory(const char *sPattern, const int flags, const char *sDir, struct file **headFile, struct file **tailFile);
+char *readLine(FILE *file);
+// replace with struct line *searchPatternInFile
+void searchPatternInFile(const char *sPattern, const char *filePath);
+void beginSearch(const char *searchPattern, const int flags, struct path *headPath);
 
 #endif

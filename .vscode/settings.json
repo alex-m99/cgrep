@@ -4,6 +4,7 @@
         "aaa": "c",
         "stdio.h": "c",
         "system_error": "c",
-        "xlocale": "c"
+        "xlocale": "c",
+        "search.h": "c"
     }
 }

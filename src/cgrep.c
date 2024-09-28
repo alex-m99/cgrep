@@ -5,10 +5,10 @@
     - make sure the struct members are sufficient to output the lines for -B, -A and -C options*/ 
 
 #include "../include/search.h"
-
+#include <stdio.h>
 int main(int argc, char *argv[]) {
     int flags = 0;
-    char *search;
+    char *sPattern;
 
     // linked list for path traversal
     struct path *headPath = NULL;
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
     // get search pattern
     if(argc > 0) {
-        search = *argv++; 
+        sPattern = *argv++; 
         --argc;
     }
     else {
@@ -40,13 +40,13 @@ int main(int argc, char *argv[]) {
     }
     
     printf("Bitmask: %x\n", flags);
-    printf("Search: %s\n", search);
+    printf("Search: %s\n", sPattern);
    // printf("Argv: %s\n", *argv);
 
      // build the linked list with the paths/files to apply grep to
     if (argc > 0) {
         while (argc-- > 0) {
-            addPathNode(*argv, headPath, tailPath);
+            addPathNode(*argv, &headPath, &tailPath);
             ++argv;
         }
     }
@@ -55,14 +55,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    beginSearch(headPath, flags);
-
-    // curPath = headPath;
+    // struct path *curPath = headPath;
     // while (curPath != NULL) {
     //     printf("Name: %s\n", curPath->name);
     //     curPath = curPath->next;
     // }
 
+    beginSearch(sPattern, flags, headPath);
     // free the paths linked list
     freePathsList(&headPath);
 

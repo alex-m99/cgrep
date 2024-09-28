@@ -13,7 +13,7 @@ SRCS = $(SRCDIR)/cgrep.c $(SRCDIR)/linked_lists.c $(SRCDIR)/directory_search.c  
 OBJS = $(OBJDIR)/cgrep.o $(OBJDIR)/linked_lists.o $(OBJDIR)/directory_search.o   # Object files
 
 # Output binary name
-TARGET = search.exe  # Updated for Windows executable
+TARGET = cgrep  # Updated for Windows executable
 
 # Rule to compile object files from source files
 $(OBJDIR)/%.o: $(SRCDIR)/%.c $(DEPS)
